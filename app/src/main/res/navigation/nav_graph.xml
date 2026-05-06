@@ -74,4 +74,9 @@
         android:name="com.fitpro.myapplication2.EvenementsFragment"
         android:label="Événements"/>
 
+    <fragment
+        android:id="@+id/paiementsFragment"
+        android:name="com.fitpro.myapplication2.PaiementsFragment"
+        android:label="Paiements"/>
+
 </navigation>

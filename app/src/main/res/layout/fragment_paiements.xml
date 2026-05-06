@@ -1,23 +1,25 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
     android:background="#0D0D1A"
     android:padding="16dp">
 
+    <!-- Titre dynamique (Mon abonnement / Paiements de X) -->
     <TextView
+        android:id="@+id/tvTitrePaiements"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="💳 Paiements"
-        android:textSize="24sp"
+        android:text="💳 Mon abonnement"
+        android:textSize="22sp"
         android:textStyle="bold"
         android:textColor="#FFFFFF"
         android:layout_marginBottom="16dp"/>
 
     <!-- Card statut abonnement -->
     <androidx.cardview.widget.CardView
-        xmlns:app="http://schemas.android.com/apk/res-auto"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginBottom="16dp"
@@ -34,7 +36,7 @@
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Mon abonnement"
+                android:text="Statut abonnement"
                 android:textColor="#AAAAAA"
                 android:textSize="13sp"
                 android:layout_marginBottom="8dp"/>
@@ -43,7 +45,7 @@
                 android:id="@+id/tvStatutAbonnement"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Actif ✅"
+                android:text="--"
                 android:textColor="#06D6A0"
                 android:textSize="20sp"
                 android:textStyle="bold"
@@ -58,10 +60,9 @@
                 android:textSize="13sp"/>
 
         </LinearLayout>
-
     </androidx.cardview.widget.CardView>
 
-    <!-- Historique paiements -->
+    <!-- Titre historique -->
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"

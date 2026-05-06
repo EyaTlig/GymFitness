@@ -10,7 +10,7 @@ public class ExerciceModel {
     private int calories;
     private String emoji;
 
-    // Constructeur
+
     public ExerciceModel(int id, String nom, String categorie, int sets,
                          String reps, String niveau, int calories, String emoji) {
         this.id = id;
@@ -23,7 +23,7 @@ public class ExerciceModel {
         this.emoji = emoji;
     }
 
-    // Getters
+
     public int getId() { return id; }
     public String getNom() { return nom; }
     public String getCategorie() { return categorie; }

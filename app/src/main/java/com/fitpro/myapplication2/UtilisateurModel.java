@@ -8,7 +8,7 @@ public class UtilisateurModel {
     private String statutAbonnement;
     private String dateExpiration;
 
-    public UtilisateurModel() {} // requis pour Firestore
+    public UtilisateurModel() {}
 
     public UtilisateurModel(String id, String nom, String email,
                             String role, String statutAbonnement,

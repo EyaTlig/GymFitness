@@ -6,7 +6,7 @@ public class PublicationModel {
     private String contenu;
     private String date;
 
-    public PublicationModel() {} // requis pour Firestore
+    public PublicationModel() {}
 
     public PublicationModel(String id, String titre, String contenu, String date) {
         this.id = id;

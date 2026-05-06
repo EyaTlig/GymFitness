@@ -19,7 +19,7 @@ public class AdminActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_admin);
 
-        // Navigation
+        //
         NavHostFragment navHostFragment = (NavHostFragment) getSupportFragmentManager()
                 .findFragmentById(R.id.adminNavHostFragment);
         NavController navController = navHostFragment.getNavController();
@@ -27,7 +27,7 @@ public class AdminActivity extends AppCompatActivity {
         BottomNavigationView bottomNav = findViewById(R.id.adminBottomNav);
         NavigationUI.setupWithNavController(bottomNav, navController);
 
-        // Bouton déconnexion
+        // Bouton mta3 déconnexion
         Button btnDeconnexion = findViewById(R.id.btnAdminDeconnexion);
         btnDeconnexion.setOnClickListener(v -> {
             FirebaseAuth.getInstance().signOut();

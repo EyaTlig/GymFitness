@@ -22,23 +22,31 @@ public class SeanceAdapter extends RecyclerView.Adapter<SeanceAdapter.ViewHolder
     private List<ExerciceModel> liste;
     private final OnSupprimerListener onSupprimer;
 
+    // Référence au ViewModel pour lire/écrire l'état des sets
+    private final SeanceViewModel viewModel;
+
     public interface OnSupprimerListener {
         void onSupprimer(ExerciceModel exercice);
     }
 
-    public SeanceAdapter(List<ExerciceModel> liste, OnSupprimerListener onSupprimer) {
-        this.liste = liste;
+    public SeanceAdapter(List<ExerciceModel> liste,
+                         OnSupprimerListener onSupprimer,
+                         SeanceViewModel viewModel) {
+        this.liste       = liste;
         this.onSupprimer = onSupprimer;
+        this.viewModel   = viewModel;
     }
 
+    // ─── ViewHolder ───────────────────────────────────────────────
+
     public static class ViewHolder extends RecyclerView.ViewHolder {
-        public final TextView tvEmoji;
-        public final TextView tvNom;
-        public final TextView tvSetsReps;
-        public final TextView tvCalories;
-        public final TextView btnMenu;
-        public final LinearLayout layoutCercles;
-        public final ProgressBar progressSets;
+        public final TextView      tvEmoji;
+        public final TextView      tvNom;
+        public final TextView      tvSetsReps;
+        public final TextView      tvCalories;
+        public final TextView      btnMenu;
+        public final LinearLayout  layoutCercles;
+        public final ProgressBar   progressSets;
 
         public ViewHolder(View view) {
             super(view);
@@ -51,6 +59,8 @@ public class SeanceAdapter extends RecyclerView.Adapter<SeanceAdapter.ViewHolder
             progressSets  = view.findViewById(R.id.progressSets);
         }
     }
+
+    // ─── Cycle de vie adapter ─────────────────────────────────────
 
     @NonNull
     @Override
@@ -65,24 +75,24 @@ public class SeanceAdapter extends RecyclerView.Adapter<SeanceAdapter.ViewHolder
         ExerciceModel ex = liste.get(position);
         Context context  = holder.itemView.getContext();
 
-        // Remplir les données
+        // Données de base
         holder.tvEmoji.setText(ex.getEmoji());
         holder.tvNom.setText(ex.getNom());
         holder.tvSetsReps.setText(ex.getSets() + " sets × " + ex.getReps());
         holder.tvCalories.setText(String.valueOf(ex.getCalories()));
 
-        // Créer les cercles sets
+        // ── Cercles sets ─────────────────────────────────────────
         int totalSets = ex.getSets();
-        boolean[] setsCompletes = new boolean[totalSets];
+
+        // On lit l'état PERSISTANT depuis le ViewModel (pas un tableau local !)
+        boolean[] setsEtat = viewModel.getSetsEtat(ex.getId(), totalSets);
+
         holder.layoutCercles.removeAllViews();
 
         for (int i = 0; i < totalSets; i++) {
             final int index = i;
             TextView cercle = new TextView(context);
-            cercle.setWidth(44);
-            cercle.setHeight(44);
             cercle.setGravity(android.view.Gravity.CENTER);
-            cercle.setText(String.valueOf(i + 1));
             cercle.setTextSize(12f);
             cercle.setTextColor(Color.WHITE);
             cercle.setBackgroundResource(R.drawable.bg_niveau);
@@ -91,40 +101,38 @@ public class SeanceAdapter extends RecyclerView.Adapter<SeanceAdapter.ViewHolder
             params.setMargins(8, 0, 8, 0);
             cercle.setLayoutParams(params);
 
-            // Clic sur cercle
+            // ── Applique l'état sauvegardé (vert si déjà complété) ──
+            appliquerEtatCercle(cercle, setsEtat[i], index);
+
+            // ── Clic : toggle + sauvegarde dans ViewModel ───────────
             cercle.setOnClickListener(v -> {
-                setsCompletes[index] = !setsCompletes[index];
+                boolean nouvelEtat = !setsEtat[index];
 
-                if (setsCompletes[index]) {
-                    // Set complété → vert
-                    cercle.setBackgroundColor(Color.parseColor("#06D6A0"));
-                    cercle.setText("✓");
+                // Sauvegarde dans le ViewModel (persiste lors du retour)
+                viewModel.setSetEtat(ex.getId(), index, nouvelEtat);
+                setsEtat[index] = nouvelEtat;
 
-                    // Mettre à jour la barre de progression
-                    int completes = compterCompletes(setsCompletes);
-                    holder.progressSets.setProgress((completes * 100) / totalSets);
+                // Met à jour l'affichage du cercle
+                appliquerEtatCercle(cercle, nouvelEtat, index);
 
-                    // Afficher timer de repos
+                // Met à jour la barre de progression
+                int completes = viewModel.compterSetsCompletes(ex.getId());
+                holder.progressSets.setProgress((completes * 100) / totalSets);
+
+                // Affiche le timer de repos uniquement si set complété
+                if (nouvelEtat) {
                     afficherTimerRepos(context);
-
-                } else {
-                    // Set annulé → gris
-                    cercle.setBackgroundColor(Color.parseColor("#2A2A3A"));
-                    cercle.setText(String.valueOf(index + 1));
-                    cercle.setTextColor(Color.WHITE);
-
-                    int completes = compterCompletes(setsCompletes);
-                    holder.progressSets.setProgress((completes * 100) / totalSets);
                 }
             });
 
             holder.layoutCercles.addView(cercle);
         }
 
-        // Progression initiale
-        holder.progressSets.setProgress(0);
+        // Progression initiale correcte (reflète les sets déjà faits)
+        int completes = viewModel.compterSetsCompletes(ex.getId());
+        holder.progressSets.setProgress(totalSets > 0 ? (completes * 100) / totalSets : 0);
 
-        // Menu ⋮ → Supprimer
+        // ── Menu Supprimer ────────────────────────────────────────
         holder.btnMenu.setOnClickListener(v -> {
             PopupMenu popup = new PopupMenu(context, holder.btnMenu);
             popup.getMenu().add("🗑 Supprimer");
@@ -136,12 +144,36 @@ public class SeanceAdapter extends RecyclerView.Adapter<SeanceAdapter.ViewHolder
         });
     }
 
-    private int compterCompletes(boolean[] sets) {
-        int count = 0;
-        for (boolean s : sets) if (s) count++;
-        return count;
+    @Override
+    public int getItemCount() {
+        return liste != null ? liste.size() : 0;
     }
 
+    public void mettreAJour(List<ExerciceModel> nouvelleListe) {
+        this.liste = nouvelleListe;
+        notifyDataSetChanged();
+    }
+
+    // ─── Helpers ──────────────────────────────────────────────────
+
+    /**
+     * Applique la couleur verte (complété) ou grise (non fait) sur un cercle.
+     */
+    private void appliquerEtatCercle(TextView cercle, boolean complete, int index) {
+        if (complete) {
+            cercle.setBackgroundColor(Color.parseColor("#06D6A0")); // vert
+            cercle.setText("✓");
+            cercle.setTextColor(Color.WHITE);
+        } else {
+            cercle.setBackgroundColor(Color.parseColor("#2A2A3A")); // gris
+            cercle.setText(String.valueOf(index + 1));
+            cercle.setTextColor(Color.WHITE);
+        }
+    }
+
+    /**
+     * Dialog timer de repos 60s.
+     */
     private void afficherTimerRepos(Context context) {
         AlertDialog.Builder builder = new AlertDialog.Builder(context);
         builder.setTitle("⏱ Temps de repos");
@@ -154,7 +186,6 @@ public class SeanceAdapter extends RecyclerView.Adapter<SeanceAdapter.ViewHolder
         tvTimer.setPadding(0, 32, 0, 32);
         tvTimer.setText("60s");
         builder.setView(tvTimer);
-
         builder.setNegativeButton("Passer", null);
 
         AlertDialog dialog = builder.create();
@@ -165,14 +196,9 @@ public class SeanceAdapter extends RecyclerView.Adapter<SeanceAdapter.ViewHolder
             public void onTick(long millisRestants) {
                 long secs = millisRestants / 1000;
                 tvTimer.setText(secs + "s");
-
-                if (secs <= 10) {
-                    tvTimer.setTextColor(Color.parseColor("#FF4D6D"));
-                } else if (secs <= 30) {
-                    tvTimer.setTextColor(Color.parseColor("#FFB703"));
-                } else {
-                    tvTimer.setTextColor(Color.parseColor("#06D6A0"));
-                }
+                if (secs <= 10)      tvTimer.setTextColor(Color.parseColor("#FF4D6D"));
+                else if (secs <= 30) tvTimer.setTextColor(Color.parseColor("#FFB703"));
+                else                 tvTimer.setTextColor(Color.parseColor("#06D6A0"));
             }
 
             @Override
@@ -182,15 +208,5 @@ public class SeanceAdapter extends RecyclerView.Adapter<SeanceAdapter.ViewHolder
                 if (dialog.isShowing()) dialog.dismiss();
             }
         }.start();
-    }
-
-    @Override
-    public int getItemCount() {
-        return liste != null ? liste.size() : 0;
-    }
-
-    public void mettreAJour(List<ExerciceModel> nouvelleListe) {
-        this.liste = nouvelleListe;
-        notifyDataSetChanged();
     }
 }

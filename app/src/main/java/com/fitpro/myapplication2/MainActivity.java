@@ -5,8 +5,8 @@ import android.os.Bundle;
 
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.navigation.NavController;
+import androidx.navigation.NavOptions;
 import androidx.navigation.fragment.NavHostFragment;
-import androidx.navigation.ui.NavigationUI;
 
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.google.firebase.auth.FirebaseAuth;
@@ -18,7 +18,6 @@ public class MainActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        // nchoufouh ken connecta
         FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
         if (user == null) {
             startActivity(new Intent(this, LoginActivity.class));
@@ -33,6 +32,23 @@ public class MainActivity extends AppCompatActivity {
         NavController navController = navHostFragment.getNavController();
 
         BottomNavigationView bottomNav = findViewById(R.id.bottom_nav);
-        NavigationUI.setupWithNavController(bottomNav, navController);
+
+        NavOptions options = new NavOptions.Builder()
+                .setPopUpTo(R.id.homeFragment, false)
+                .setLaunchSingleTop(true)
+                .build();
+
+        bottomNav.setOnItemSelectedListener(item -> {
+            int id = item.getItemId();
+
+
+            if (navController.getCurrentDestination() != null
+                    && navController.getCurrentDestination().getId() == id) {
+                return true;
+            }
+
+            navController.navigate(id, null, options);
+            return true;
+        });
     }
 }

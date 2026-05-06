@@ -1,1 +1,40 @@
+# Android Studio
+*.iml
+.gradle
+/local.properties
+/.idea/caches
+/.idea/libraries
+/.idea/modules.xml
+/.idea/workspace.xml
+/.idea/navEditor.xml
+/.idea/assetWizardSettings.xml
+/.idea
+.DS_Store
 /build
+/captures
+.externalNativeBuild
+.codemagic
+*.ap_
+*.dex
+
+# Firebase — NE JAMAIS POUSSER
+google-services.json
+
+# Keystore — NE JAMAIS POUSSER
+*.jks
+*.keystore
+
+# Gradle
+.gradle/
+build/
+app/build/
+
+# Local config
+local.properties
+
+# OS
+.DS_Store
+Thumbs.db
+
+# NDK
+obj/

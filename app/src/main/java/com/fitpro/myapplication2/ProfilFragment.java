@@ -11,6 +11,7 @@ import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.cardview.widget.CardView;
 import androidx.fragment.app.Fragment;
 import androidx.navigation.Navigation;
 
@@ -41,21 +42,19 @@ public class ProfilFragment extends Fragment {
         TextView tvEmail        = view.findViewById(R.id.tvProfilEmail);
         TextView tvStatut       = view.findViewById(R.id.tvProfilStatut);
         TextView tvExpiration   = view.findViewById(R.id.tvProfilExpiration);
-        Button btnDeconnexion   = view.findViewById(R.id.btnDeconnexion);
+        Button   btnDeconnexion = view.findViewById(R.id.btnDeconnexion);
         TextView tvPublications = view.findViewById(R.id.tvVoirPublications);
         TextView tvEvenements   = view.findViewById(R.id.tvVoirEvenements);
+        CardView cardAbonnement = view.findViewById(R.id.cardAbonnement);
 
         String uid = mAuth.getCurrentUser().getUid();
 
-        // Charger infos utilisateur
         db.collection("users").document(uid).get()
                 .addOnSuccessListener(doc -> {
                     tvNom.setText(doc.getString("nom"));
                     tvEmail.setText(doc.getString("email"));
-
                     String statut     = doc.getString("statutAbonnement");
                     String expiration = doc.getString("dateExpiration");
-
                     if ("actif".equals(statut)) {
                         tvStatut.setText("Actif ✅");
                         tvStatut.setTextColor(Color.parseColor("#06D6A0"));
@@ -67,17 +66,18 @@ public class ProfilFragment extends Fragment {
                             (expiration != null ? expiration : "--/--/----"));
                 });
 
-        // Voir publications
+        cardAbonnement.setOnClickListener(v ->
+                Navigation.findNavController(view).navigate(R.id.paiementsFragment)
+        );
+
         tvPublications.setOnClickListener(v ->
                 Navigation.findNavController(view).navigate(R.id.publicationsFragment)
         );
 
-        // Voir événements
         tvEvenements.setOnClickListener(v ->
                 Navigation.findNavController(view).navigate(R.id.evenementsFragment)
         );
 
-        // Déconnexion
         btnDeconnexion.setOnClickListener(v -> {
             mAuth.signOut();
             startActivity(new Intent(requireContext(), LoginActivity.class));

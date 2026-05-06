@@ -24,7 +24,7 @@ public class DetailFragment extends Fragment {
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        // Récupérer les arguments
+
         if (getArguments() != null) {
             int id           = getArguments().getInt("id");
             String nom       = getArguments().getString("nom", "");
@@ -38,7 +38,7 @@ public class DetailFragment extends Fragment {
             exercice = new ExerciceModel(id, nom, categorie, sets, reps, niveau, calories, emoji);
         }
 
-        // ViewModel partagé avec l'Activity
+        // marbouta bel  l'Activity
         seanceViewModel = new ViewModelProvider(requireActivity()).get(SeanceViewModel.class);
     }
 
@@ -64,7 +64,7 @@ public class DetailFragment extends Fragment {
         ((TextView) view.findViewById(R.id.tvDetailReps)).setText(exercice.getReps());
         ((TextView) view.findViewById(R.id.tvDetailCalories)).setText(String.valueOf(exercice.getCalories()));
 
-        // Couleur selon niveau
+        // Couleur selon niveau mta3 l exercice
         String couleur;
         switch (exercice.getNiveau()) {
             case "Débutant":      couleur = "#06D6A0"; break;

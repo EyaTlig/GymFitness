@@ -7,7 +7,7 @@ public class PaiementModel {
     private double montant;
     private String statut; // "Payé" ou "En attente"
 
-    public PaiementModel() {} // requis pour Firestore
+    public PaiementModel() {}
 
     public PaiementModel(String id, String mois, String date,
                          double montant, String statut) {

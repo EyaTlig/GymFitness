@@ -8,7 +8,7 @@ public class EvenementModel {
     private String lieu;
     private String emoji;
 
-    public EvenementModel() {} // requis pour Firestore
+    public EvenementModel() {}
 
     public EvenementModel(String id, String titre, String description,
                           String date, String lieu, String emoji) {

@@ -22,11 +22,10 @@ import java.util.List;
 
 public class PaiementsFragment extends Fragment {
 
-    private RecyclerView recycler;
     private PaiementAdapter adapter;
     private List<PaiementModel> liste = new ArrayList<>();
     private FirebaseFirestore db;
-    private TextView tvStatut, tvDateExpiration;
+    private TextView tvStatut, tvDateExpiration, tvTitreUser;
 
     @Nullable
     @Override
@@ -41,17 +40,40 @@ public class PaiementsFragment extends Fragment {
         super.onViewCreated(view, savedInstanceState);
 
         db = FirebaseFirestore.getInstance();
-        String uid = FirebaseAuth.getInstance().getCurrentUser().getUid();
 
         tvStatut         = view.findViewById(R.id.tvStatutAbonnement);
         tvDateExpiration = view.findViewById(R.id.tvDateExpiration);
+        tvTitreUser      = view.findViewById(R.id.tvTitrePaiements);
 
-        recycler = view.findViewById(R.id.recyclerPaiements);
+        RecyclerView recycler = view.findViewById(R.id.recyclerPaiements);
         recycler.setLayoutManager(new LinearLayoutManager(requireContext()));
         adapter = new PaiementAdapter(liste);
         recycler.setAdapter(adapter);
 
-        // Charger infos abonnement
+        // Détermine si on vient du profil adhérent ou de l'admin
+        String userId   = null;
+        String userName = null;
+
+        if (getArguments() != null) {
+            userId   = getArguments().getString("userId");
+            userName = getArguments().getString("userName");
+        }
+
+        // Si pas d'argument → c'est l'adhérent qui consulte son propre profil
+        if (userId == null) {
+            userId = FirebaseAuth.getInstance().getCurrentUser().getUid();
+        }
+
+        // Titre dynamique
+        if (userName != null) {
+            tvTitreUser.setText("💳 Paiements de " + userName);
+        } else {
+            tvTitreUser.setText("💳 Mon abonnement");
+        }
+
+        final String uid = userId;
+
+        // Statut abonnement
         db.collection("users").document(uid).get()
                 .addOnSuccessListener(doc -> {
                     String statut     = doc.getString("statutAbonnement");
@@ -68,7 +90,7 @@ public class PaiementsFragment extends Fragment {
                             (expiration != null ? expiration : "--/--/----"));
                 });
 
-        // Charger historique paiements
+        // Historique paiements
         db.collection("users").document(uid)
                 .collection("paiements")
                 .orderBy("date")
@@ -76,14 +98,13 @@ public class PaiementsFragment extends Fragment {
                     if (snapshot == null) return;
                     liste.clear();
                     for (QueryDocumentSnapshot doc : snapshot) {
-                        PaiementModel p = new PaiementModel(
+                        liste.add(new PaiementModel(
                                 doc.getId(),
                                 doc.getString("mois"),
                                 doc.getString("date"),
                                 doc.getDouble("montant") != null ? doc.getDouble("montant") : 0,
                                 doc.getString("statut")
-                        );
-                        liste.add(p);
+                        ));
                     }
                     adapter.mettreAJour(liste);
                 });
