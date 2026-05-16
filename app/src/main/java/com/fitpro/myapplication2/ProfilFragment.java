@@ -43,6 +43,7 @@ public class ProfilFragment extends Fragment {
         TextView tvStatut       = view.findViewById(R.id.tvProfilStatut);
         TextView tvExpiration   = view.findViewById(R.id.tvProfilExpiration);
         Button   btnDeconnexion = view.findViewById(R.id.btnDeconnexion);
+        TextView tvHistorique   = view.findViewById(R.id.tvVoirHistorique);
         TextView tvPublications = view.findViewById(R.id.tvVoirPublications);
         TextView tvEvenements   = view.findViewById(R.id.tvVoirEvenements);
         CardView cardAbonnement = view.findViewById(R.id.cardAbonnement);
@@ -68,6 +69,10 @@ public class ProfilFragment extends Fragment {
 
         cardAbonnement.setOnClickListener(v ->
                 Navigation.findNavController(view).navigate(R.id.paiementsFragment)
+        );
+
+        tvHistorique.setOnClickListener(v ->
+                Navigation.findNavController(view).navigate(R.id.historiqueFragment)
         );
 
         tvPublications.setOnClickListener(v ->
