@@ -16,17 +16,33 @@ public class UtilisateurAdapter extends RecyclerView.Adapter<UtilisateurAdapter.
     public interface OnUserClickListener {
         void onClick(UtilisateurModel user);
     }
+    
+    public interface OnUserEditListener {
+        void onEdit(UtilisateurModel user);
+    }
+    
+    public interface OnUserDeleteListener {
+        void onDelete(UtilisateurModel user);
+    }
 
     private List<UtilisateurModel> liste;
     private final OnUserClickListener listener;
+    private final OnUserEditListener editListener;
+    private final OnUserDeleteListener deleteListener;
 
-    public UtilisateurAdapter(List<UtilisateurModel> liste, OnUserClickListener listener) {
-        this.liste    = liste;
+    public UtilisateurAdapter(List<UtilisateurModel> liste, 
+                             OnUserClickListener listener,
+                             OnUserEditListener editListener,
+                             OnUserDeleteListener deleteListener) {
+        this.liste = liste;
         this.listener = listener;
+        this.editListener = editListener;
+        this.deleteListener = deleteListener;
     }
 
     public static class ViewHolder extends RecyclerView.ViewHolder {
         TextView tvNom, tvEmail, tvAbonnement, tvStatut;
+        TextView btnEditUser, btnDeleteUser;
 
         public ViewHolder(View view) {
             super(view);
@@ -34,6 +50,8 @@ public class UtilisateurAdapter extends RecyclerView.Adapter<UtilisateurAdapter.
             tvEmail      = view.findViewById(R.id.tvEmailUser);
             tvAbonnement = view.findViewById(R.id.tvAbonnementUser);
             tvStatut     = view.findViewById(R.id.tvStatutUser);
+            btnEditUser  = view.findViewById(R.id.btnEditUser);
+            btnDeleteUser = view.findViewById(R.id.btnDeleteUser);
         }
     }
 
@@ -66,6 +84,16 @@ public class UtilisateurAdapter extends RecyclerView.Adapter<UtilisateurAdapter.
         // Clic sur l'item → voir paiements de cet utilisateur
         holder.itemView.setOnClickListener(v -> {
             if (listener != null) listener.onClick(user);
+        });
+        
+        // Clic sur le bouton Edit
+        holder.btnEditUser.setOnClickListener(v -> {
+            if (editListener != null) editListener.onEdit(user);
+        });
+        
+        // Clic sur le bouton Delete
+        holder.btnDeleteUser.setOnClickListener(v -> {
+            if (deleteListener != null) deleteListener.onDelete(user);
         });
     }
 
