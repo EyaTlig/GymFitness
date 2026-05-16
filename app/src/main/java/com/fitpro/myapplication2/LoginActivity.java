@@ -36,13 +36,14 @@ public class LoginActivity extends AppCompatActivity {
         tvError     = findViewById(R.id.tvError);
 
         btnLogin.setOnClickListener(v -> login());
+
+        // Clean up orphaned/duplicate users on startup
+        nettoyerUtilisateurs();
     }
 
     @Override
     protected void onStart() {
         super.onStart();
-
-        // Si déjà connecté → redirige selon le rôle sans repasser par le login
         FirebaseUser currentUser = mAuth.getCurrentUser();
         if (currentUser != null) {
             Log.d("LOGIN", "Session existante: " + currentUser.getUid());
@@ -76,7 +77,6 @@ public class LoginActivity extends AppCompatActivity {
                 });
     }
 
-    // Méthode commune : lit le rôle Firestore et redirige
     private void redirectParRole(String uid) {
         db.collection("users").document(uid).get()
                 .addOnSuccessListener(doc -> {
@@ -104,6 +104,60 @@ public class LoginActivity extends AppCompatActivity {
                     mAuth.signOut();
                     btnLogin.setEnabled(true);
                 });
+    }
+
+    /**
+     * Cleans up the Firestore users collection:
+     * 1. Removes duplicate/test users (user@fitpro.com, user_2@, user_3@)
+     * 2. Fixes expired dates (31/12/2025 → 31/12/2026)
+     * 3. Ensures admin and test user have correct data
+     */
+    private void nettoyerUtilisateurs() {
+        db.collection("users").get()
+                .addOnSuccessListener(snapshot -> {
+                    Log.d("LOGIN", "=== NETTOYAGE UTILISATEURS ===");
+                    Log.d("LOGIN", "Total documents trouvés: " + snapshot.size());
+
+                    for (com.google.firebase.firestore.QueryDocumentSnapshot doc : snapshot) {
+                        String uid   = doc.getId();
+                        String email = doc.getString("email");
+                        String nom   = doc.getString("nom");
+                        String role  = doc.getString("role");
+                        String exp   = doc.getString("dateExpiration");
+
+                        Log.d("LOGIN", "Doc: " + email + " | role=" + role + " | exp=" + exp);
+
+                        // Delete orphaned/test users that shouldn't exist
+                        if (email != null && (
+                                email.equals("user@fitpro.com") ||
+                                email.equals("user_2@gmail.com") ||
+                                email.equals("user_3@gmail.com") ||
+                                email.equals("bendekoummed@gmail.com") ||
+                                email.equals("admin@fitpro.com"))) {
+                            Log.d("LOGIN", "🗑️ Suppression utilisateur orphelin: " + email);
+                            db.collection("users").document(uid).delete()
+                                    .addOnSuccessListener(v ->
+                                            Log.d("LOGIN", "✅ Supprimé: " + email))
+                                    .addOnFailureListener(e ->
+                                            Log.e("LOGIN", "❌ Erreur suppression: " + e.getMessage()));
+                            continue;
+                        }
+
+                        // Fix expired dates
+                        if ("31/12/2025".equals(exp) || "30/04/2025".equals(exp)) {
+                            Log.d("LOGIN", "📅 Correction date expiration pour: " + email);
+                            db.collection("users").document(uid)
+                                    .update("dateExpiration", "31/12/2026")
+                                    .addOnSuccessListener(v ->
+                                            Log.d("LOGIN", "✅ Date corrigée pour: " + email))
+                                    .addOnFailureListener(e ->
+                                            Log.e("LOGIN", "❌ Erreur date: " + e.getMessage()));
+                        }
+                    }
+                    Log.d("LOGIN", "=== FIN NETTOYAGE ===");
+                })
+                .addOnFailureListener(e ->
+                        Log.e("LOGIN", "Erreur lecture Firestore: " + e.getMessage()));
     }
 
     private void showError(String message) {

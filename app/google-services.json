@@ -1,13 +1,13 @@
 {
   "project_info": {
-    "project_number": "972594453101",
-    "project_id": "fitpro-5040c",
-    "storage_bucket": "fitpro-5040c.firebasestorage.app"
+    "project_number": "947884663252",
+    "project_id": "oxygym-95a32",
+    "storage_bucket": "oxygym-95a32.firebasestorage.app"
   },
   "client": [
     {
       "client_info": {
-        "mobilesdk_app_id": "1:972594453101:android:270a10bcc6db7bb683bd64",
+        "mobilesdk_app_id": "1:947884663252:android:94d997d011ef0ea3c43641",
         "android_client_info": {
           "package_name": "com.fitpro.myapplication2"
         }
@@ -15,7 +15,7 @@
       "oauth_client": [],
       "api_key": [
         {
-          "current_key": "AIzaSyBHr6JNt97SFu9hMvDqQtICvzzw9JvJvnQ"
+          "current_key": "AIzaSyArr0Jthp680n0NsLaBZWPKFgzUb2ly6Uk"
         }
       ],
       "services": {
