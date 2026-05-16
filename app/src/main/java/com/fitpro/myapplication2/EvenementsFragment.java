@@ -78,11 +78,18 @@ public class EvenementsFragment extends Fragment {
     }
 
     private void chargerEvenements() {
+        android.util.Log.d("EVENEMENT", "Chargement des événements...");
         db.collection("evenements")
                 .addSnapshotListener((snapshot, e) -> {
+                    if (e != null) {
+                        android.util.Log.e("EVENEMENT", "❌ Erreur lecture: " + e.getMessage());
+                        return;
+                    }
                     if (snapshot == null) return;
+                    android.util.Log.d("EVENEMENT", "📊 Nombre d'événements: " + snapshot.size());
                     liste.clear();
                     for (QueryDocumentSnapshot doc : snapshot) {
+                        android.util.Log.d("EVENEMENT", "📅 Event: " + doc.getString("titre") + " | ID: " + doc.getId());
                         EvenementModel ev = new EvenementModel(
                                 doc.getId(),
                                 doc.getString("titre"),
@@ -147,15 +154,20 @@ public class EvenementsFragment extends Fragment {
             ev.put("lieu", lieu);
             ev.put("emoji", emoji.isEmpty() ? "📅" : emoji);
 
+            android.util.Log.d("EVENEMENT", "Tentative de sauvegarde: " + titre);
+
             db.collection("evenements").add(ev)
-                    .addOnSuccessListener(ref ->
-                            Toast.makeText(requireContext(), "✅ Événement créé !",
-                                    Toast.LENGTH_SHORT).show()
-                    )
-                    .addOnFailureListener(e ->
-                            Toast.makeText(requireContext(), "❌ Erreur : " + e.getMessage(),
-                                    Toast.LENGTH_SHORT).show()
-                    );
+                    .addOnSuccessListener(ref -> {
+                        android.util.Log.d("EVENEMENT", "✅ Sauvegardé avec ID: " + ref.getId());
+                        Toast.makeText(requireContext(), "✅ Événement créé !",
+                                Toast.LENGTH_SHORT).show();
+                    })
+                    .addOnFailureListener(e -> {
+                        android.util.Log.e("EVENEMENT", "❌ ERREUR: " + e.getMessage());
+                        android.util.Log.e("EVENEMENT", "❌ CAUSE: " + e.getCause());
+                        Toast.makeText(requireContext(), "❌ Erreur : " + e.getMessage(),
+                                Toast.LENGTH_LONG).show();
+                    });
         });
 
         builder.setNegativeButton("Annuler", null);
